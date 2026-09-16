@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acta de visita — Visitas ECB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="/static/css/acta.css" />
+</head>
+<body>
+  <div class="root">
+
+    <div class="topbar">
+      <button id="btn-atras" class="icon-btn oculto" onclick="Acta.atras()">←</button>
+      <div class="topTitle" id="titulo-pantalla">Acta de visita</div>
+      <div class="badge oculto" id="badge-tipo"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- 1. Tipo de visita -> datos del punto/prospecto -> gestor -->
+      <section id="pantalla-pds" class="pantalla">
+
+        <div class="card" id="card-tipo">
+          <label>¿Qué tipo de visita vas a realizar?</label>
+          <div class="pillRow" id="pills-tipo-inicial"></div>
+        </div>
+
+        <div class="card oculto" id="card-pds">
+          <label>Código PDS</label>
+          <div class="fila">
+            <input type="text" id="in-pds" inputmode="numeric" placeholder="100001" />
+            <button class="btn-secundario" onclick="Acta.buscarPds()">Buscar</button>
+          </div>
+          <div id="pds-resultado" class="pds-resultado oculto"></div>
+          <div id="pds-mensaje" class="mensaje oculto"></div>
+        </div>
+
+        <div class="card oculto" id="card-prospecto">
+          <label>Número de identificación del cliente</label>
+          <input type="text" id="in-identificacion" inputmode="numeric" placeholder="Cédula o NIT" />
+
+          <label style="margin-top:14px">Nombre del establecimiento (opcional)</label>
+          <input type="text" id="in-nombre-prospecto" placeholder="Nombre del negocio" />
+
+          <div id="prospecto-mensaje" class="mensaje oculto"></div>
+          <button class="btn-principal" style="margin-top:16px" onclick="Acta.confirmarProspecto()">Continuar</button>
+        </div>
+
+        <div class="card oculto" id="card-oficina">
+          <label>Nombre de la oficina</label>
+          <input type="text" id="in-nombre-oficina" placeholder="Ej: Oficina Chapinero" />
+
+          <div id="oficina-mensaje" class="mensaje oculto"></div>
+          <button class="btn-principal" style="margin-top:16px" onclick="Acta.confirmarOficina()">Continuar</button>
+        </div>
+
+        <div class="card oculto" id="card-tipo-gestor">
+          <label>Gestor que diligencia</label>
+          <select id="in-gestor"></select>
+
+          <div id="gestor-mensaje" class="mensaje oculto"></div>
+          <button class="btn-principal" style="margin-top:16px" onclick="Acta.iniciarVisita()">
+            Iniciar visita (captura GPS)
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. Portón de sección omitible (solo Seguimiento, secciones 1/2/4) -->
+      <section id="pantalla-seccion-gate" class="pantalla oculto">
+        <div class="card exito">
+          <div class="eyebrow">SECCIÓN</div>
+          <div class="exito-titulo" id="gate-titulo">Sección</div>
+          <p style="color:var(--texto-suave);margin:8px 0 20px">
+            Este cliente ya está vinculado. ¿Deseas actualizar esta información o dejarla como está registrada?
+          </p>
+          <button class="btn-principal" onclick="Acta.elegirActualizarSeccion()">Actualizar</button>
+          <button class="btn-secundario" style="margin-top:10px;width:100%" onclick="Acta.elegirOmitirSeccion()">Omitir (no ha cambiado)</button>
+        </div>
+      </section>
+
+      <!-- 3. Preguntas -->
+      <section id="pantalla-pregunta" class="pantalla oculto">
+        <div class="gps" id="gps-banner"></div>
+
+        <div class="progRow">
+          <div class="progLabel mono" id="prog-texto">PREGUNTA 1 DE 1</div>
+          <div class="progTrack"><div class="progFill" id="prog-fill"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow" id="preg-seccion">SECCIÓN</div>
+          <div class="qtext" id="preg-texto">¿Pregunta?</div>
+          <div id="preg-respuesta"></div>
+          <div id="preg-mensaje" class="mensaje oculto"></div>
+          <textarea id="preg-observacion" class="obs" placeholder="Observación (opcional)"></textarea>
+        </div>
+
+        <button class="btn-principal" onclick="Acta.siguientePregunta()">Siguiente</button>
+      </section>
+
+      <!-- 3. Evidencias -->
+      <section id="pantalla-evidencia" class="pantalla oculto">
+        <div class="card">
+          <div class="evLabel">EVIDENCIA FOTOGRÁFICA</div>
+
+          <label>Tipo de foto</label>
+          <select id="in-tipo-foto">
+            <option>Fachada</option>
+            <option>Interior</option>
+            <option>Documento</option>
+            <option>Otra</option>
+          </select>
+
+          <input type="file" id="in-foto" accept="image/*" capture="environment" style="margin-top:10px" />
+          <button class="btn-secundario" style="margin-top:10px" onclick="Acta.subirFoto()">Subir foto</button>
+
+          <div id="fotos-mensaje" class="mensaje oculto"></div>
+          <div class="evRow" id="fotos-subidas" style="margin-top:14px"></div>
+        </div>
+
+        <button class="btn-principal" onclick="Acta.irACierre()">Continuar</button>
+      </section>
+
+      <!-- 4. Cierre -->
+      <section id="pantalla-cierre" class="pantalla oculto">
+        <div class="card">
+          <label>Observaciones finales (opcional)</label>
+          <textarea id="in-observaciones-finales" class="obs" placeholder="Notas generales de la visita..."></textarea>
+        </div>
+        <button class="btn-principal" onclick="Acta.guardarTodo()">Guardar y cerrar acta</button>
+        <div id="cierre-mensaje" class="mensaje oculto"></div>
+      </section>
+
+      <!-- 5. Éxito -->
+      <section id="pantalla-exito" class="pantalla oculto">
+        <div class="card exito">
+          <div class="exito-icono">✔</div>
+          <div class="exito-titulo">Visita registrada</div>
+          <div class="exito-detalle" id="exito-detalle"></div>
+          <a class="btn-principal enlace" id="link-galeria" href="/galeria">Ver evidencias de este PDS</a>
+          <button class="btn-secundario" style="margin-top:10px;width:100%" onclick="Acta.nuevaVisita()">Registrar otra visita</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="/static/js/acta.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visita Corresponsal</title>
+  <link rel="stylesheet" href="/static/css/estilos.css" />
+</head>
+<body>
+  <div class="tarjeta">
+    <h1>VISITA CORRESPONSAL</h1>
+
+    <label for="pds">PDS</label>
+    <div class="fila-busqueda">
+      <input type="text" id="pds" placeholder="100001" inputmode="numeric" />
+      <button onclick="consultarPds()">🔍</button>
+    </div>
+
+    <button class="boton-principal" onclick="consultarPds()">CONSULTAR</button>
+
+    <div id="resultado" class="resultado oculto">
+      <p><strong>PDS:</strong> <span id="r_pds"></span></p>
+      <p><strong>Titular:</strong> <span id="r_titular"></span></p>
+      <p><strong>Establecimiento:</strong> <span id="r_establecimiento"></span></p>
+      <p><strong>Dirección:</strong> <span id="r_direccion"></span></p>
+      <p><strong>Teléfono:</strong> <span id="r_telefono"></span></p>
+      <p><strong>Correo:</strong> <span id="r_correo"></span></p>
+      <p><strong>Gestor:</strong> <span id="r_gestor"></span></p>
+    </div>
+
+    <div id="error" class="error oculto"></div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

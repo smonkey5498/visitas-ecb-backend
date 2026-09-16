@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: visitas-ecb-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: TABLE_PDS
+        value: pds
+      - key: TABLE_GESTORES
+        value: gestores
+      - key: TABLE_PREGUNTAS
+        value: preguntas_visita
+      - key: TABLE_ACTAS
+        value: actas_visita
+      - key: TABLE_RESPUESTAS
+        value: respuestas_visita
+      - key: TABLE_EVIDENCIAS
+        value: evidencias_visita
+      - key: TABLE_CAMBIOS
+        value: cambios_pds
+      - key: BUCKET_EVIDENCIAS
+        value: evidencias
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        sync: false
+      - key: RESEND_OVERRIDE_TO
+        sync: false

@@ -1,0 +1,119 @@
+* { box-sizing: border-box; }
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f4f7;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.tarjeta {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  font-size: 18px;
+  color: #2f5496;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+label {
+  font-size: 13px;
+  color: #555;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.fila-busqueda {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.boton-principal {
+  width: 100%;
+  background: #2f5496;
+  color: white;
+  font-weight: bold;
+}
+
+.resultado {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.error {
+  margin-top: 16px;
+  color: #c0392b;
+  font-size: 14px;
+}
+
+.oculto {
+  display: none;
+}
+
+/* Galería de evidencias (Fase 17) */
+.tarjeta-ancha {
+  max-width: 900px;
+}
+
+.mensaje {
+  margin-top: 16px;
+  color: #555;
+  font-size: 14px;
+}
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.foto-card {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.foto-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.foto-pie {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #444;
+  line-height: 1.5;
+}

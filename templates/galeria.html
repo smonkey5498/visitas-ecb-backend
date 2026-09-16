@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galería de evidencias — Visitas ECB</title>
+  <link rel="stylesheet" href="/static/css/estilos.css" />
+</head>
+<body>
+  <div class="tarjeta tarjeta-ancha">
+    <h1>GALERÍA DE EVIDENCIAS</h1>
+
+    <label for="pds">PDS</label>
+    <div class="fila-busqueda">
+      <input type="text" id="pds" placeholder="100001" inputmode="numeric" />
+      <button onclick="buscarEvidencias()">🔍</button>
+    </div>
+
+    <div id="mensaje" class="mensaje oculto"></div>
+    <div id="galeria" class="galeria"></div>
+  </div>
+
+  <script src="/static/js/galeria.js"></script>
+</body>
+</html>

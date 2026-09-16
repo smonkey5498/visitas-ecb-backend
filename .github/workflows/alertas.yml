@@ -1,0 +1,30 @@
+name: Alertas de visitas pendientes
+
+# Corre solo, una vez por semana, sin que tu computador esté prendido.
+# También se puede lanzar a mano desde la pestaña "Actions" del repo
+# (botón "Run workflow") gracias a workflow_dispatch.
+on:
+  schedule:
+    - cron: "0 13 * * 1"   # lunes 8:00 a.m. hora Colombia (UTC-5) = 13:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  enviar-alertas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Enviar alertas por correo
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+        run: python scripts/enviar_alertas.py
