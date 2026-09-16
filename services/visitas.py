@@ -83,6 +83,35 @@ def cerrar_visita(id_acta: int, observaciones: str | None = None) -> dict:
     return db.update_row(TABLE_ACTAS, match={"id_acta": id_acta}, fields=campos)
 
 
+def ultimas_respuestas(pds: str) -> dict[str, str]:
+    """
+    Junta, por cada pregunta, la respuesta más reciente que se le haya
+    dado a este PDS en cualquier visita COMPLETA anterior — no solo la
+    última acta, porque si una sección se omitió por no haber cambiado,
+    esa acta no vuelve a guardar esas respuestas, y aun así se deben
+    seguir mostrando como "dato conocido" en la siguiente visita.
+    Si no hay ninguna visita completa anterior (cliente nuevo, o la única
+    acta previa quedó "En curso"), devuelve un diccionario vacío.
+    """
+    actas = db.get_table_items(TABLE_ACTAS, filters={"pds": pds}, limit=200)
+    completas = sorted(
+        (a for a in actas if a.get("estado_visita") == "Completa"),
+        key=lambda a: a.get("id_acta") or 0,
+    )
+    if not completas:
+        return {}
+
+    resultado: dict[str, str] = {}
+    for acta in completas:  # de la más vieja a la más nueva, así la última pisa a las anteriores
+        respuestas = db.get_table_items(
+            TABLE_RESPUESTAS, filters={"id_acta": acta["id_acta"]}, limit=500
+        )
+        for r in respuestas:
+            if r.get("id_pregunta") and r.get("respuesta"):
+                resultado[r["id_pregunta"]] = r["respuesta"]
+    return resultado
+
+
 def guardar_respuestas(id_acta: int, respuestas: list[dict]) -> dict:
     """
     Guarda las respuestas de una acta. `respuestas` es una lista de

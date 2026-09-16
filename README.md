@@ -18,10 +18,28 @@ visita y galería de evidencias.
 - `scripts/enviar_alertas.py` — envía por correo (Resend) la lista de
   PDS con más de 90 días sin visita a cada gestor; se ejecuta por
   cron desde GitHub Actions (`.github/workflows/alertas.yml`).
-- `migrar_preguntas_csv.py` — carga/actualiza el catálogo de 104
-  preguntas (`PREGUNTAS_VISITA_consolidado.csv`) en Supabase.
+- `migrar_preguntas_csv.py` — carga/actualiza el catálogo de preguntas
+  (`PREGUNTAS_VISITA_consolidado.csv`) en Supabase.
 - `migrar_datos.py` — carga inicial del portafolio de PDS y gestores.
+- `asignar_clave.py` — le asigna o cambia la clave de acceso a un
+  gestor (login del acta). Solo lo corre quien administra el backend.
 - `schema.sql` — esquema de las tablas en Supabase (Postgres).
+
+## Login de los gestores
+
+Cada gestor entra a `/acta` con su nombre (tal como está en la tabla
+`gestores`) y una clave. La clave la asigna quien administra el
+backend — el gestor no la puede cambiar desde el celular:
+
+```powershell
+python asignar_clave.py "Nombre exacto del gestor" "la-clave-que-le-des"
+```
+
+Eso guarda solo un hash (bcrypt) en Supabase, nunca la clave en texto
+plano. `POST /login` valida usuario+clave y devuelve un token que el
+celular guarda y manda en cada acción (`Authorization: Bearer ...`); el
+token vence a los `SESION_DIAS` (30 por defecto), y ahí el celular
+vuelve a pedir el login.
 
 ## Configuración local (Windows / PowerShell)
 
@@ -44,6 +62,8 @@ si el celular está en la misma red, usando la IP del computador).
 | Variable | Para qué |
 |---|---|
 | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | Conexión a Supabase (Project Settings → API) |
+| `SECRET_KEY` | Firma los tokens de sesión del login de gestores. Cadena larga y aleatoria, distinta a cualquier otra clave del proyecto — si cambia, todas las sesiones activas quedan invalidadas. |
+| `SESION_DIAS` | Cada cuántos días vence la sesión de un gestor en su celular (por defecto 30). |
 | `TABLE_PDS`, `TABLE_GESTORES`, `TABLE_PREGUNTAS`, `TABLE_ACTAS`, `TABLE_RESPUESTAS`, `TABLE_EVIDENCIAS`, `TABLE_CAMBIOS` | Nombres de tabla (coinciden con `schema.sql`) |
 | `BUCKET_EVIDENCIAS` | Bucket de Supabase Storage para las fotos (debe estar marcado como público) |
 | `RESEND_API_KEY`, `RESEND_FROM` | Envío de alertas por correo (resend.com) |

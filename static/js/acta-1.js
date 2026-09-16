@@ -9,16 +9,7 @@ const Acta = (() => {
   // Secciones que, solo para un cliente ya vinculado (visita de Seguimiento),
   // se pueden omitir porque casi no cambian. El resto siempre se responde
   // completo, y en Prospección/Oficina no hay opción de omitir.
-  // (La Sección 1 ya no está aquí: en Seguimiento no se vuelve a preguntar
-  // pregunta por pregunta, ver SECCIONES_OMITIDAS_EN_SEGUIMIENTO abajo.)
-  const SECCIONES_OMITIBLES_SEGUIMIENTO = new Set(["2"]);
-
-  // Secciones que, en una visita de Seguimiento, NUNCA se preguntan
-  // pregunta por pregunta — porque su información ya se confirmó en el
-  // portón "Datos registrados de este PDS" (titular, identificación,
-  // dirección, teléfono) al buscar el punto. En Prospección/Oficina sí
-  // se preguntan completas, porque ese portón no aplica (cliente nuevo).
-  const SECCIONES_OMITIDAS_EN_SEGUIMIENTO = new Set(["1"]);
+  const SECCIONES_OMITIBLES_SEGUIMIENTO = new Set(["1", "2"]);
 
   // Secciones que, en una visita de Seguimiento, solo aplican si se
   // solicitó aumento de cupo (pregunta P048). En Prospección siempre
@@ -120,9 +111,6 @@ const Acta = (() => {
   // ¿Aplica esta sección tal como está la visita ahora mismo? (independiente
   // de si el gestor decidió omitirla en el "portón" de actualizar/omitir).
   function seccionActiva(seccion) {
-    if (state.tipoVisita === "Seguimiento" && SECCIONES_OMITIDAS_EN_SEGUIMIENTO.has(seccion)) {
-      return false;
-    }
     if (SECCIONES_CONDICIONADAS_A_CUPO.has(seccion) && state.tipoVisita === "Seguimiento") {
       const r = state.respuestas[PREGUNTA_AUMENTO_CUPO];
       return !!r && r.respuesta === "Si";
@@ -174,7 +162,6 @@ const Acta = (() => {
     respuestas: {}, // id_pregunta -> { respuesta, observacion, _esAnterior? }
     respuestasAnteriores: {}, // id_pregunta -> respuesta de la última visita completa a este PDS
     misPds: [], // PDS asignados al gestor logueado (para Seguimiento)
-    oficinas: [], // catálogo de nombres de oficina (para tipo de visita "Oficina")
     fotos: [],
     seccionesOmitidas: new Set(),
     seccionesDecididas: new Set(),
@@ -244,12 +231,6 @@ const Acta = (() => {
     el("card-prospecto").classList.toggle("oculto", !(paso === "datos" && state.esProspecto));
     el("card-oficina").classList.toggle("oculto", !(paso === "datos" && state.tipoVisita === "Oficina"));
     el("card-tipo-gestor").classList.toggle("oculto", paso !== "gestor");
-
-    // El portón de "¿actualizar datos del PDS?" solo lo muestra buscarPds()
-    // tras encontrar un PDS existente — al cambiar de subpaso se resetea,
-    // así no queda colgado si el gestor va y vuelve.
-    el("card-pds-gate").classList.add("oculto");
-    el("pds-edicion").classList.add("oculto");
 
     actualizarBotonAtras();
   }
@@ -381,45 +362,6 @@ const Acta = (() => {
     state.esProspecto = tipo === "Prospección";
     mostrarSubpaso("datos");
     if (tipo === "Seguimiento") cargarMisPds();
-    if (tipo === "Oficina") cargarOficinas();
-  }
-
-  async function cargarOficinas() {
-    if (state.oficinas.length) return; // catálogo fijo, no cambia durante la sesión
-    try {
-      const resp = await fetch("/oficinas");
-      if (resp.ok) state.oficinas = await resp.json();
-    } catch (err) {
-      state.oficinas = [];
-    }
-  }
-
-  // Lista filtrable de oficinas (evita que cada gestor escriba el mismo
-  // nombre de forma distinta entre visitas, como pasaba con el texto libre).
-  function renderOficinas(filtro) {
-    const cont = el("oficinas-resultados");
-    if (!cont) return;
-    const q = normalizar(filtro).trim();
-    const lista = q.length
-      ? state.oficinas.filter((nombre) => normalizar(nombre).includes(q))
-      : state.oficinas;
-
-    cont.innerHTML = "";
-    if (!lista.length) {
-      cont.classList.add("oculto");
-      return;
-    }
-    lista.slice(0, 30).forEach((nombre) => {
-      const fila = document.createElement("div");
-      fila.className = "ciiu-item";
-      fila.textContent = nombre;
-      fila.onclick = () => {
-        el("in-nombre-oficina").value = nombre;
-        cont.classList.add("oculto");
-      };
-      cont.appendChild(fila);
-    });
-    cont.classList.remove("oculto");
   }
 
   async function cargarMisPds() {
@@ -504,82 +446,9 @@ const Acta = (() => {
       `;
       el("pds-resultado").classList.remove("oculto");
 
-      mostrarGatePds(datos);
-    } catch (err) {
-      mostrarMensaje("pds-mensaje", "No se pudo conectar con el servidor.");
-    }
-  }
-
-  // Antes de seguir a elegir gestor, se muestran los datos que ya tiene
-  // el portafolio de este PDS (no los de la última visita — eso es el
-  // gate de sección más adelante) para que el gestor decida si hay que
-  // corregir algo (teléfono, dirección, titular) antes de arrancar.
-  const CAMPOS_GATE_PDS = [
-    { campo: "titular", etiqueta: "Nombre del titular" },
-    { campo: "identificacion_titular", etiqueta: "Identificación del titular" },
-    { campo: "direccion", etiqueta: "Dirección" },
-    { campo: "telefono", etiqueta: "Teléfono" },
-  ];
-
-  function mostrarGatePds(datos) {
-    const cont = el("pds-gate-resumen");
-    cont.innerHTML = CAMPOS_GATE_PDS
-      .map(
-        (c) =>
-          `<div class="gate-item"><span>${c.etiqueta}</span><strong>${datos[c.campo] || "— (sin dato registrado)"}</strong></div>`
-      )
-      .join("");
-    el("pds-edicion").classList.add("oculto");
-    ocultarMensaje("pds-edicion-mensaje");
-    el("card-pds-gate").classList.remove("oculto");
-  }
-
-  function mostrarEdicionPds() {
-    const datos = state.pdsInfo || {};
-    el("in-pds-titular").value = datos.titular || "";
-    el("in-pds-identificacion").value = datos.identificacion_titular || "";
-    el("in-pds-direccion").value = datos.direccion || "";
-    el("in-pds-telefono").value = datos.telefono || "";
-    ocultarMensaje("pds-edicion-mensaje");
-    el("pds-edicion").classList.remove("oculto");
-  }
-
-  function omitirEdicionPds() {
-    el("card-pds-gate").classList.add("oculto");
-    irAGestor();
-  }
-
-  async function guardarEdicionPds() {
-    ocultarMensaje("pds-edicion-mensaje");
-    const cuerpo = {
-      nombre_titular: el("in-pds-titular").value.trim(),
-      identificacion_titular: el("in-pds-identificacion").value.trim(),
-      direccion: el("in-pds-direccion").value.trim(),
-      telefono: el("in-pds-telefono").value.trim(),
-    };
-    try {
-      const resp = await fetch(`/pds/${encodeURIComponent(state.pds)}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...encabezadosAuth() },
-        body: JSON.stringify(cuerpo),
-      });
-      if (esNoAutorizado(resp)) return;
-      if (!resp.ok) {
-        mostrarMensaje("pds-edicion-mensaje", `Error ${resp.status} guardando los datos.`);
-        return;
-      }
-      // refleja lo guardado en el estado local, por si se vuelve a mostrar
-      state.pdsInfo = {
-        ...state.pdsInfo,
-        titular: cuerpo.nombre_titular,
-        identificacion_titular: cuerpo.identificacion_titular,
-        direccion: cuerpo.direccion,
-        telefono: cuerpo.telefono,
-      };
-      el("card-pds-gate").classList.add("oculto");
       irAGestor();
     } catch (err) {
-      mostrarMensaje("pds-edicion-mensaje", "No se pudo conectar con el servidor.");
+      mostrarMensaje("pds-mensaje", "No se pudo conectar con el servidor.");
     }
   }
 
@@ -1124,12 +993,6 @@ const Acta = (() => {
       inPds.onfocus = () => renderMisPds(inPds.value);
     }
 
-    const inOficina = el("in-nombre-oficina");
-    if (inOficina) {
-      inOficina.oninput = () => renderOficinas(inOficina.value);
-      inOficina.onfocus = () => renderOficinas(inOficina.value);
-    }
-
     const { token, gestor } = sesionGuardada();
     if (token && gestor) {
       state.gestor = gestor;
@@ -1145,7 +1008,6 @@ const Acta = (() => {
     elegirTipo, buscarPds, confirmarProspecto, confirmarOficina, iniciarVisita,
     siguientePregunta, atras, subirFoto, irACierre, guardarTodo, nuevaVisita,
     elegirActualizarSeccion, elegirOmitirSeccion,
-    mostrarEdicionPds, omitirEdicionPds, guardarEdicionPds,
   };
 })();
 

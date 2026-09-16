@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Acta de visita — Visitas ECB</title>
+  <link rel="icon" href="/static/img/logo-icono.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
   <link rel="stylesheet" href="/static/css/acta.css" />
 </head>
 <body>
@@ -13,14 +14,37 @@
 
     <div class="topbar">
       <button id="btn-atras" class="icon-btn oculto" onclick="Acta.atras()">←</button>
+      <img class="logo-topbar" src="/static/img/logo-icono.png" alt="Banco Caja Social" />
       <div class="topTitle" id="titulo-pantalla">Acta de visita</div>
       <div class="badge oculto" id="badge-tipo"></div>
+      <button id="btn-logout" class="icon-btn oculto" title="Cerrar sesión" onclick="Acta.cerrarSesion()">⎋</button>
     </div>
 
     <div class="content">
 
+      <!-- 0. Login -->
+      <section id="pantalla-login" class="pantalla oculto">
+        <div class="hero-login">
+          <img class="hero-login-logo" src="/static/img/logo-icono.png" alt="Banco Caja Social" />
+          <div class="hero-login-marca">Banco Caja Social</div>
+          <div class="hero-login-tagline">Su banco amigo</div>
+          <div class="hero-login-titulo">Acta de visita a corresponsales</div>
+          <p class="hero-login-sub">Ingresa con tu usuario y tu clave para registrar tus visitas.</p>
+        </div>
+        <div class="card">
+          <label>Usuario</label>
+          <input type="text" id="in-usuario" placeholder="Tu nombre, como te registraron" autocomplete="username" />
+
+          <label style="margin-top:14px">Clave</label>
+          <input type="password" id="in-clave" placeholder="••••••••" autocomplete="current-password" />
+
+          <div id="login-mensaje" class="mensaje oculto"></div>
+          <button class="btn-principal" style="margin-top:16px" onclick="Acta.iniciarSesion()">Iniciar sesión</button>
+        </div>
+      </section>
+
       <!-- 1. Tipo de visita -> datos del punto/prospecto -> gestor -->
-      <section id="pantalla-pds" class="pantalla">
+      <section id="pantalla-pds" class="pantalla oculto">
 
         <div class="card" id="card-tipo">
           <label>¿Qué tipo de visita vas a realizar?</label>
@@ -28,13 +52,43 @@
         </div>
 
         <div class="card oculto" id="card-pds">
-          <label>Código PDS</label>
-          <div class="fila">
-            <input type="text" id="in-pds" inputmode="numeric" placeholder="100001" />
-            <button class="btn-secundario" onclick="Acta.buscarPds()">Buscar</button>
+          <label>Tus PDS asignados</label>
+          <div class="ciiu-buscador">
+            <div class="fila">
+              <input type="text" id="in-pds" inputmode="text" placeholder="Busca por código o nombre..." autocomplete="off" />
+              <button class="btn-secundario" onclick="Acta.buscarPds()">Buscar</button>
+            </div>
+            <div id="mispds-resultados" class="ciiu-resultados oculto"></div>
           </div>
           <div id="pds-resultado" class="pds-resultado oculto"></div>
           <div id="pds-mensaje" class="mensaje oculto"></div>
+        </div>
+
+        <div class="card oculto" id="card-pds-gate">
+          <div class="eyebrow">DATOS REGISTRADOS DE ESTE PDS</div>
+          <div id="pds-gate-resumen" class="gate-resumen"></div>
+          <p style="color:var(--texto-suave);margin:14px 0 16px">
+            ¿Estos datos siguen correctos, o quieres actualizarlos antes de continuar?
+          </p>
+          <button class="btn-principal" onclick="Acta.mostrarEdicionPds()">Actualizar datos</button>
+          <button class="btn-secundario" style="margin-top:10px;width:100%" onclick="Acta.omitirEdicionPds()">Continuar sin cambios</button>
+
+          <div class="oculto" id="pds-edicion" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--borde)">
+            <label>Nombre del titular</label>
+            <input type="text" id="in-pds-titular" />
+
+            <label style="margin-top:12px">Identificación del titular</label>
+            <input type="text" id="in-pds-identificacion" inputmode="numeric" />
+
+            <label style="margin-top:12px">Dirección</label>
+            <input type="text" id="in-pds-direccion" />
+
+            <label style="margin-top:12px">Teléfono</label>
+            <input type="text" id="in-pds-telefono" inputmode="tel" />
+
+            <div id="pds-edicion-mensaje" class="mensaje oculto" style="margin-top:12px"></div>
+            <button class="btn-principal" style="margin-top:14px" onclick="Acta.guardarEdicionPds()">Guardar y continuar</button>
+          </div>
         </div>
 
         <div class="card oculto" id="card-prospecto">
@@ -50,7 +104,10 @@
 
         <div class="card oculto" id="card-oficina">
           <label>Nombre de la oficina</label>
-          <input type="text" id="in-nombre-oficina" placeholder="Ej: Oficina Chapinero" />
+          <div class="ciiu-buscador">
+            <input type="text" id="in-nombre-oficina" placeholder="Escribe para buscar..." autocomplete="off" />
+            <div id="oficinas-resultados" class="ciiu-resultados oculto"></div>
+          </div>
 
           <div id="oficina-mensaje" class="mensaje oculto"></div>
           <button class="btn-principal" style="margin-top:16px" onclick="Acta.confirmarOficina()">Continuar</button>
@@ -58,7 +115,7 @@
 
         <div class="card oculto" id="card-tipo-gestor">
           <label>Gestor que diligencia</label>
-          <select id="in-gestor"></select>
+          <div class="gestor-actual" id="gestor-actual"></div>
 
           <div id="gestor-mensaje" class="mensaje oculto"></div>
           <button class="btn-principal" style="margin-top:16px" onclick="Acta.iniciarVisita()">
@@ -69,11 +126,15 @@
 
       <!-- 2. Portón de sección omitible (solo Seguimiento, secciones 1/2/4) -->
       <section id="pantalla-seccion-gate" class="pantalla oculto">
+        <div class="card">
+          <div class="eyebrow">DATOS REGISTRADOS ACTUALMENTE</div>
+          <div id="gate-resumen" class="gate-resumen"></div>
+        </div>
         <div class="card exito">
           <div class="eyebrow">SECCIÓN</div>
           <div class="exito-titulo" id="gate-titulo">Sección</div>
           <p style="color:var(--texto-suave);margin:8px 0 20px">
-            Este cliente ya está vinculado. ¿Deseas actualizar esta información o dejarla como está registrada?
+            Estos son los datos que ya se tienen de este cliente. ¿Deseas actualizarlos o dejarlos como están?
           </p>
           <button class="btn-principal" onclick="Acta.elegirActualizarSeccion()">Actualizar</button>
           <button class="btn-secundario" style="margin-top:10px;width:100%" onclick="Acta.elegirOmitirSeccion()">Omitir (no ha cambiado)</button>

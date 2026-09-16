@@ -41,6 +41,7 @@ def obtener_pds(codigo_pds: str) -> dict | None:
     return {
         "pds": fila.get("pds"),
         "titular": fila.get("nombre_titular"),
+        "identificacion_titular": fila.get("identificacion_titular"),
         "establecimiento": fila.get("nombre_establecimiento"),
         "direccion": fila.get("direccion"),
         "telefono": fila.get("telefono"),

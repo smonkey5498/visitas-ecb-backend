@@ -1,16 +1,20 @@
 * { box-sizing: border-box; }
 
 :root {
-  --acc: #B0542C;
+  /* Paleta tomada del logo y las piezas de marca de Banco Caja Social */
+  --acc: #1E56A0;
+  --acc-oscuro: #0A2A5E;
+  --rojo: #CE122D;
+  --cielo: #30A8E0;
   --verde: #1F4B43;
   --verde-suave: #E1EEE5;
   --verde-texto: #2A5C41;
-  --fondo: #FAFAF7;
-  --tarjeta: #FFFFFE;
-  --borde: #EAE3D2;
-  --texto: #1C2A33;
-  --texto-suave: #7C8A94;
-  --texto-tenue: #8B98A0;
+  --fondo: #F2F5FA;
+  --tarjeta: #FFFFFF;
+  --borde: #DCE4EF;
+  --texto: #122142;
+  --texto-suave: #66708C;
+  --texto-tenue: #8996AC;
 }
 
 body {
@@ -35,13 +39,19 @@ body {
 
 .topbar {
   flex: none;
-  height: 56px;
+  height: 60px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 0 16px;
-  background: var(--tarjeta);
-  border-bottom: 1px solid var(--borde);
+  background: var(--acc-oscuro);
+  border-bottom: 1px solid var(--acc-oscuro);
+}
+
+.logo-topbar {
+  height: 26px;
+  width: auto;
+  display: block;
 }
 
 .icon-btn {
@@ -49,19 +59,19 @@ body {
   background: none;
   font-size: 18px;
   cursor: pointer;
-  color: var(--texto);
+  color: #fff;
   padding: 4px 6px;
 }
 
-.topTitle { font-weight: 600; font-size: 15.5px; flex: 1; }
+.topTitle { font-weight: 600; font-size: 15.5px; flex: 1; color: #fff; }
 
 .badge {
   font-size: 11px;
   font-weight: 600;
   padding: 5px 10px;
   border-radius: 99px;
-  background: var(--verde-suave);
-  color: var(--verde);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
   letter-spacing: .01em;
 }
 
@@ -156,8 +166,8 @@ textarea {
 .mensaje {
   margin-top: 12px;
   font-size: 13px;
-  color: #A65A3A;
-  background: #FBEFE8;
+  color: #A30F26;
+  background: #FBE9EB;
   padding: 10px 12px;
   border-radius: 8px;
 }
@@ -236,11 +246,12 @@ textarea {
 }
 
 .qtext {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
   font-weight: 600;
   font-size: 18px;
   margin-top: 8px;
   line-height: 1.35;
+  color: var(--acc-oscuro);
 }
 
 .obs {
@@ -280,10 +291,11 @@ textarea {
 }
 
 .exito-titulo {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
   font-weight: 600;
   font-size: 20px;
   margin-bottom: 8px;
+  color: var(--acc-oscuro);
 }
 
 .exito-detalle {
@@ -344,7 +356,7 @@ textarea {
 }
 
 .ciiu-item:hover, .ciiu-item:active {
-  background: var(--verde-suave);
+  background: #EAF1FA;
 }
 
 .ciiu-item strong {
@@ -352,3 +364,95 @@ textarea {
   color: var(--acc);
   margin-right: 6px;
 }
+
+.hero-login {
+  margin: -16px -16px 4px;
+  padding: 36px 24px 30px;
+  background: var(--acc-oscuro);
+  color: #fff;
+  text-align: center;
+  border-radius: 0 0 22px 22px;
+}
+
+.hero-login-logo {
+  height: 52px;
+  margin-bottom: 12px;
+}
+
+.hero-login-marca {
+  font-family: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  color: #fff;
+}
+
+.hero-login-tagline {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--cielo);
+  margin: 2px 0 20px;
+}
+
+.hero-login-titulo {
+  font-family: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.hero-login-sub {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.dato-anterior {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--acc-oscuro);
+  background: #EAF1FA;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.gestor-actual {
+  font-family: 'Poppins', 'IBM Plex Sans', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--acc-oscuro);
+  padding: 12px;
+  border-radius: 10px;
+  background: #EAF1FA;
+}
+
+.gate-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.gate-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--borde);
+  font-size: 13.5px;
+}
+
+.gate-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.gate-item span {
+  color: var(--texto-suave);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+}
+
+.gate-item strong { color: var(--texto); font-weight: 500; line-height: 1.4; }
