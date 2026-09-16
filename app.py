@@ -9,6 +9,7 @@ load_dotenv()
 from typing import Optional
 
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -69,8 +70,10 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")
-def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+def home():
+    # La página de inicio real de los gestores es el acta; index.html es una
+    # página de prueba vieja de las primeras fases del proyecto.
+    return RedirectResponse(url="/acta")
 
 
 @app.get("/galeria")
