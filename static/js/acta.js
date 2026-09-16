@@ -19,6 +19,28 @@ const Acta = (() => {
   const SECCIONES_CONDICIONADAS_A_CUPO = new Set(["4", "8"]);
   const PREGUNTA_AUMENTO_CUPO = "P048";
 
+  // Pregunta que usa el buscador de códigos CIIU (catálogo oficial DIAN,
+  // Resolución 000114 de 2020) en vez de texto libre.
+  const PREGUNTA_CIIU = "P024";
+  let CIIU_DATA = [];
+
+  function normalizar(s) {
+    return (s || "")
+      .toString()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "");
+  }
+
+  async function cargarCiiu() {
+    try {
+      const resp = await fetch("/static/data/ciiu.json");
+      CIIU_DATA = await resp.json();
+    } catch (err) {
+      CIIU_DATA = [];
+    }
+  }
+
   const SECCION_TITULOS = {
     "1": "Información del cliente",
     "2": "Información del negocio",
@@ -436,6 +458,66 @@ const Acta = (() => {
     presentarDesde(0);
   }
 
+  // Buscador de código CIIU: el gestor escribe (código o parte del nombre de
+  // la actividad) y elige de una lista; al elegir se guarda "CÓDIGO -
+  // Descripción" como respuesta (código y nombre en un solo campo).
+  function renderBuscadorCiiu(p, guardado) {
+    const wrap = document.createElement("div");
+    wrap.className = "ciiu-buscador";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Escribe el código o la actividad (ej: panadería, 4711...)";
+    input.value = guardado.respuesta || "";
+    input.autocomplete = "off";
+
+    const resultados = document.createElement("div");
+    resultados.className = "ciiu-resultados oculto";
+
+    function elegir(item) {
+      guardado.respuesta = `${item.codigo} - ${item.descripcion}`;
+      state.respuestas[p.id_pregunta] = guardado;
+      input.value = guardado.respuesta;
+      resultados.classList.add("oculto");
+      resultados.innerHTML = "";
+    }
+
+    function buscar() {
+      const q = normalizar(input.value).trim();
+      guardado.respuesta = input.value;
+      state.respuestas[p.id_pregunta] = guardado;
+
+      resultados.innerHTML = "";
+      if (q.length < 2 || !CIIU_DATA.length) {
+        resultados.classList.add("oculto");
+        return;
+      }
+      const coincidencias = CIIU_DATA
+        .filter((item) => normalizar(item.codigo).includes(q) || normalizar(item.descripcion).includes(q))
+        .slice(0, 8);
+
+      if (!coincidencias.length) {
+        resultados.classList.add("oculto");
+        return;
+      }
+      coincidencias.forEach((item) => {
+        const fila = document.createElement("div");
+        fila.className = "ciiu-item";
+        fila.innerHTML = `<strong>${item.codigo}</strong> ${item.descripcion}`;
+        fila.onclick = () => elegir(item);
+        resultados.appendChild(fila);
+      });
+      resultados.classList.remove("oculto");
+    }
+
+    input.oninput = buscar;
+    input.onfocus = buscar;
+
+    wrap.appendChild(input);
+    wrap.appendChild(resultados);
+    return wrap;
+  }
+
   function renderPregunta() {
     const p = state.preguntas[state.indice];
     ocultarMensaje("preg-mensaje");
@@ -461,6 +543,8 @@ const Acta = (() => {
       calculado.className = "calculado";
       calculado.innerHTML = `$ ${formatoMoneda(valor)} <span>(calculado automáticamente)</span>`;
       cont.appendChild(calculado);
+    } else if (p.id_pregunta === PREGUNTA_CIIU) {
+      cont.appendChild(renderBuscadorCiiu(p, guardado));
     } else if (p.tiporespuesta === "Texto" && /fecha/i.test(p.pregunta)) {
       // Preguntas de fecha -> calendario nativo, para que no escriban
       // formatos libres ("ayer", "15 de julio", etc.)
@@ -698,6 +782,7 @@ const Acta = (() => {
 
   function init() {
     cargarGestores();
+    cargarCiiu();
     mostrarPantalla("pds");
     mostrarSubpaso("tipo");
   }
